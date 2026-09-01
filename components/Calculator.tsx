@@ -16,8 +16,9 @@ import {
 import { CalculatorState } from '../types';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const BUTTON_SIZE = (SCREEN_WIDTH - 5 * 12) / 4;
-const BUTTON_SPACING = 12;
+const BUTTON_SPACING = 10;
+const BUTTON_SIZE = (SCREEN_WIDTH - 20 - 3 * BUTTON_SPACING) / 4;
+const BUTTON_RADIUS = BUTTON_SIZE / 2 + 4;
 
 type ButtonDef = {
   label: string;
@@ -108,11 +109,14 @@ export default function Calculator() {
         {buttons.map((row, rowIdx) => (
           <View key={rowIdx} style={styles.row}>
             {row.map((btn) => {
+              const isActive =
+                btn.type === ButtonType.operator &&
+                state.operator === btn.label &&
+                state.waitingForOperand;
+
               const style =
                 btn.type === ButtonType.operator
-                  ? state.operator === btn.label && state.waitingForOperand
-                    ? styles.operatorActive
-                    : styles.operator
+                  ? styles.operator
                   : btn.type === ButtonType.function
                   ? styles.function
                   : btn.wide
@@ -128,10 +132,35 @@ export default function Calculator() {
                   style={[
                     btn.wide ? styles.wideButton : styles.button,
                     style,
+                    isActive && styles.operatorActive,
                   ]}
                   onPress={btn.action}
                   android_ripple={{ borderless: false, radius: 0 }}>
-                  <Text style={[styles.buttonText, { color: textColor }]}>
+                  <View
+                    pointerEvents="none"
+                    style={[
+                      styles.coinHighlightTop,
+                      btn.type === ButtonType.operator
+                        ? isActive
+                          ? styles.coinTopOperatorActive
+                          : styles.coinTopOperator
+                        : btn.type === ButtonType.function
+                        ? styles.coinTopFunction
+                        : styles.coinTopNumber,
+                    ]}
+                  />
+                  <View
+                    pointerEvents="none"
+                    style={[
+                      styles.coinHighlightRim,
+                      btn.type === ButtonType.operator
+                        ? styles.coinRimOperator
+                        : btn.type === ButtonType.function
+                        ? styles.coinRimFunction
+                        : styles.coinRimNumber,
+                    ]}
+                  />
+                  <Text style={[styles.buttonText, { color: textColor, zIndex: 1 }]}>
                     {btn.label}
                   </Text>
                 </Pressable>
@@ -163,8 +192,8 @@ const styles = StyleSheet.create({
     letterSpacing: -1,
   },
   buttonsContainer: {
-    paddingHorizontal: 12,
-    paddingBottom: 20,
+    paddingHorizontal: 14,
+    paddingBottom: 24,
     gap: BUTTON_SPACING,
   },
   row: {
@@ -175,36 +204,103 @@ const styles = StyleSheet.create({
   button: {
     width: BUTTON_SIZE,
     height: BUTTON_SIZE,
-    borderRadius: BUTTON_SIZE / 2,
+    borderRadius: BUTTON_RADIUS,
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
   },
   wideButton: {
     width: BUTTON_SIZE * 2 + BUTTON_SPACING,
     height: BUTTON_SIZE,
-    borderRadius: BUTTON_SIZE / 2,
+    borderRadius: BUTTON_RADIUS,
     alignItems: 'center',
     justifyContent: 'flex-start',
     flexDirection: 'row',
     paddingLeft: 28,
+    overflow: 'hidden',
+  },
+  coinHighlightTop: {
+    position: 'absolute',
+    top: 2,
+    left: 4,
+    right: 4,
+    height: '55%',
+    borderRadius: BUTTON_RADIUS,
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
+  },
+  coinTopNumber: {
+    backgroundColor: 'rgba(255,255,255,0.09)',
+  },
+  coinTopFunction: {
+    backgroundColor: 'rgba(255,255,255,0.3)',
+  },
+  coinTopOperator: {
+    backgroundColor: 'rgba(255,255,255,0.18)',
+  },
+  coinTopOperatorActive: {
+    backgroundColor: 'rgba(255,255,255,0.12)',
+  },
+  coinHighlightRim: {
+    position: 'absolute',
+    top: 1,
+    left: 1,
+    right: 1,
+    bottom: 1,
+    borderRadius: BUTTON_RADIUS,
+    borderWidth: 0.5,
+  },
+  coinRimNumber: {
+    borderColor: 'rgba(255,255,255,0.06)',
+  },
+  coinRimFunction: {
+    borderColor: 'rgba(0,0,0,0.08)',
+  },
+  coinRimOperator: {
+    borderColor: 'rgba(255,255,255,0.12)',
   },
   number: {
     backgroundColor: Colors.darkGray,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.4,
+    shadowRadius: 4,
+    elevation: 4,
   },
   function: {
     backgroundColor: Colors.lightGray,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 3,
   },
   operator: {
     backgroundColor: Colors.orange,
+    shadowColor: Colors.orange,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.35,
+    shadowRadius: 6,
+    elevation: 6,
   },
   operatorActive: {
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.orangeLight,
+    shadowColor: Colors.orange,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.5,
+    shadowRadius: 3,
+    elevation: 2,
   },
   zero: {
     backgroundColor: Colors.darkGray,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.4,
+    shadowRadius: 4,
+    elevation: 4,
   },
   buttonText: {
-    fontSize: 28,
+    fontSize: 30,
     fontWeight: '400',
   },
 });
