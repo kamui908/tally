@@ -6,7 +6,7 @@ import { Colors } from '../../constants/theme';
 
 export default function CalculatorScreen() {
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <View style={styles.calculatorWrapper}>
         <Calculator />
       </View>

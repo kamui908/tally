@@ -97,10 +97,21 @@ export default function Calculator() {
   ];
 
   const displayFontSize = state.display.length > 7 ? 40 : state.display.length > 5 ? 52 : 72;
+  const showActiveOperator = state.operator !== null && state.waitingForOperand;
 
   return (
     <View style={styles.container}>
       <View style={styles.displayContainer}>
+        {showActiveOperator && (
+          <View style={styles.activeOperatorRow}>
+            <Text style={styles.activeOperatorText}>
+              {state.previousValue != null
+                ? `${state.previousValue.toLocaleString('en-US')}`
+                : ''}
+            </Text>
+            <Text style={styles.activeOperatorSymbol}>{state.operator}</Text>
+          </View>
+        )}
         <Text style={[styles.displayText, { fontSize: displayFontSize }]} numberOfLines={1} adjustsFontSizeToFit>
           {getDisplayText(state.display)}
         </Text>
@@ -185,6 +196,22 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     paddingHorizontal: 24,
     paddingBottom: 16,
+  },
+  activeOperatorRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 4,
+  },
+  activeOperatorText: {
+    color: Colors.mediumGray,
+    fontSize: 20,
+    fontWeight: '400',
+  },
+  activeOperatorSymbol: {
+    color: Colors.orange,
+    fontSize: 22,
+    fontWeight: '600',
   },
   displayText: {
     color: Colors.white,

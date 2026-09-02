@@ -1,5 +1,3 @@
-export type NoteType = 'note' | 'checklist';
-
 export type ChecklistItem = {
   id: string;
   text: string;
@@ -9,7 +7,6 @@ export type ChecklistItem = {
 export type Note = {
   id: string;
   title: string;
-  type: NoteType;
   content: string;
   items: ChecklistItem[];
   createdAt: number;

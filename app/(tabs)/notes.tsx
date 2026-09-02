@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { View, FlatList, Pressable, Text, StyleSheet, Alert } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Note } from '../../types';
 import { Colors } from '../../constants/theme';
@@ -13,6 +13,7 @@ export default function NotesScreen() {
   const [notes, setNotes] = useState<Note[]>([]);
   const [editorVisible, setEditorVisible] = useState(false);
   const [editingNote, setEditingNote] = useState<Note | null>(null);
+  const insets = useSafeAreaInsets();
 
   useFocusEffect(
     useCallback(() => {
@@ -58,7 +59,7 @@ export default function NotesScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <View style={styles.header}>
         <Text style={styles.title}>Notes</Text>
         <View style={styles.headerActions}>
@@ -70,7 +71,7 @@ export default function NotesScreen() {
         <View style={styles.empty}>
           <Ionicons name="document-text-outline" size={64} color={Colors.mediumGray} />
           <Text style={styles.emptyTitle}>No notes yet</Text>
-          <Text style={styles.emptySubtitle}>Tap + to create a note or checklist</Text>
+          <Text style={styles.emptySubtitle}>Tap + to create a note</Text>
         </View>
       ) : (
         <FlatList
@@ -88,7 +89,9 @@ export default function NotesScreen() {
         />
       )}
 
-      <Pressable style={styles.fab} onPress={openNew}>
+      <Pressable
+        style={[styles.fab, { bottom: 20 + insets.bottom }]}
+        onPress={openNew}>
         <Ionicons name="add" size={28} color={Colors.white} />
       </Pressable>
 
@@ -154,7 +157,6 @@ const styles = StyleSheet.create({
   },
   fab: {
     position: 'absolute',
-    bottom: 32,
     right: 20,
     width: 56,
     height: 56,

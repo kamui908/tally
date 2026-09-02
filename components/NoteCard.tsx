@@ -11,18 +11,25 @@ type Props = {
 };
 
 export default function NoteCard({ note, onPress, onDelete }: Props) {
-  const accentColor = note.type === 'checklist' ? Colors.checklistAccent : Colors.noteAccent;
-  const preview =
-    note.type === 'checklist'
-      ? note.items.map((i) => (i.checked ? '✓ ' : '○ ') + i.text).join('\n')
-      : note.content;
-  const checkedCount =
-    note.type === 'checklist' ? note.items.filter((i) => i.checked).length : 0;
-  const totalCount = note.type === 'checklist' ? note.items.length : 0;
+  const hasItems = note.items.length > 0;
+  const hasContent = note.content.trim().length > 0;
+  const checkedCount = note.items.filter((i) => i.checked).length;
+  const totalCount = note.items.length;
+
+  const preview = (() => {
+    const parts: string[] = [];
+    if (hasContent) {
+      parts.push(note.content);
+    }
+    if (hasItems) {
+      parts.push(note.items.map((i) => (i.checked ? '✓ ' : '○ ') + i.text).join('\n'));
+    }
+    return parts.join('\n') || 'Empty note';
+  })();
 
   return (
     <Pressable style={styles.card} onPress={onPress}>
-      <View style={[styles.accent, { backgroundColor: accentColor }]} />
+      <View style={[styles.accent, { backgroundColor: hasItems ? Colors.checklistAccent : Colors.noteAccent }]} />
       <View style={styles.content}>
         <View style={styles.header}>
           <Text style={styles.title} numberOfLines={1}>
@@ -39,12 +46,14 @@ export default function NoteCard({ note, onPress, onDelete }: Props) {
           </Pressable>
         </View>
         <Text style={styles.preview} numberOfLines={2}>
-          {preview || 'Empty note'}
+          {preview}
         </Text>
         <View style={styles.footer}>
-          <Text style={styles.badge}>
-            {note.type === 'checklist' ? `${checkedCount}/${totalCount}` : 'Note'}
-          </Text>
+          {hasItems ? (
+            <Text style={styles.badge}>{`${checkedCount}/${totalCount} tasks`}</Text>
+          ) : (
+            <Text style={styles.badge}>Note</Text>
+          )}
           <Text style={styles.date}>
             {new Date(note.updatedAt).toLocaleDateString('en-US', {
               month: 'short',
