@@ -12,9 +12,9 @@ export function formatDisplay(value: string): string {
   if (str.length > MAX_DISPLAY_LENGTH) {
     const exp = num.toExponential(4);
     if (exp.length > MAX_DISPLAY_LENGTH) {
-      return num.toExponential(2);
+      return num.toExponential(2).replace('e+', '×10^').replace('e-', '×10^-');
     }
-    return exp;
+    return exp.replace('e+', '×10^').replace('e-', '×10^-');
   }
   return value;
 }
@@ -50,6 +50,9 @@ export function handleDigit(state: CalculatorState, digit: string): CalculatorSt
       ...state,
       display: digit,
       waitingForOperand: false,
+      expression: state.previousValue != null && state.operator
+        ? `${formatDisplay(state.previousValue.toString())} ${state.operator} ${digit}`
+        : digit,
     };
   }
 
@@ -57,7 +60,13 @@ export function handleDigit(state: CalculatorState, digit: string): CalculatorSt
   if (newDisplay.replace('.', '').replace('-', '').length > MAX_DISPLAY_LENGTH) {
     return state;
   }
-  return { ...state, display: newDisplay };
+  return {
+    ...state,
+    display: newDisplay,
+    expression: state.previousValue != null && state.operator
+      ? `${formatDisplay(state.previousValue.toString())} ${state.operator} ${newDisplay}`
+      : newDisplay,
+  };
 }
 
 export function handleDecimal(state: CalculatorState): CalculatorState {
@@ -66,10 +75,20 @@ export function handleDecimal(state: CalculatorState): CalculatorState {
       ...state,
       display: '0.',
       waitingForOperand: false,
+      expression: state.previousValue != null && state.operator
+        ? `${formatDisplay(state.previousValue.toString())} ${state.operator} 0.`
+        : '0.',
     };
   }
   if (state.display.includes('.')) return state;
-  return { ...state, display: state.display + '.' };
+  const newDisplay = state.display + '.';
+  return {
+    ...state,
+    display: newDisplay,
+    expression: state.previousValue != null && state.operator
+      ? `${formatDisplay(state.previousValue.toString())} ${state.operator} ${newDisplay}`
+      : newDisplay,
+  };
 }
 
 export function handleOperator(state: CalculatorState, nextOperator: string): CalculatorState {
@@ -78,7 +97,7 @@ export function handleOperator(state: CalculatorState, nextOperator: string): Ca
   if (state.previousValue !== null && state.operator && !state.waitingForOperand) {
     const result = calculate(state.previousValue, currentValue, state.operator);
     if (isNaN(result)) {
-      return { display: 'Error', previousValue: null, operator: null, waitingForOperand: true };
+      return { display: 'Error', previousValue: null, operator: null, waitingForOperand: true, expression: '' };
     }
     const resultStr = formatDisplay(result.toString());
     return {
@@ -86,6 +105,7 @@ export function handleOperator(state: CalculatorState, nextOperator: string): Ca
       previousValue: result,
       operator: nextOperator,
       waitingForOperand: true,
+      expression: `${resultStr} ${nextOperator}`,
     };
   }
 
@@ -94,6 +114,7 @@ export function handleOperator(state: CalculatorState, nextOperator: string): Ca
     previousValue: currentValue,
     operator: nextOperator,
     waitingForOperand: true,
+    expression: `${formatDisplay(state.display)} ${nextOperator}`,
   };
 }
 
@@ -103,20 +124,34 @@ export function handleEquals(state: CalculatorState): CalculatorState {
   const currentValue = parseFloat(state.display);
   const result = calculate(state.previousValue, currentValue, state.operator);
   if (isNaN(result)) {
-    return { display: 'Error', previousValue: null, operator: null, waitingForOperand: true };
+    return { display: 'Error', previousValue: null, operator: null, waitingForOperand: true, expression: '' };
   }
 
   const resultStr = formatDisplay(result.toString());
+  const fullExpression = `${formatDisplay(state.previousValue.toString())} ${state.operator} ${formatDisplay(state.display)} =`;
   return {
     display: resultStr,
     previousValue: null,
     operator: null,
     waitingForOperand: true,
+    expression: fullExpression,
   };
 }
 
 export function handleClear(_state: CalculatorState): CalculatorState {
-  return { display: '0', previousValue: null, operator: null, waitingForOperand: false };
+  return { display: '0', previousValue: null, operator: null, waitingForOperand: false, expression: '' };
+}
+
+export function handleBackspace(state: CalculatorState): CalculatorState {
+  if (state.display === 'Error' || state.waitingForOperand) return state;
+  const newDisplay = state.display.length > 1 ? state.display.slice(0, -1) : '0';
+  return {
+    ...state,
+    display: newDisplay,
+    expression: state.previousValue != null && state.operator
+      ? `${formatDisplay(state.previousValue.toString())} ${state.operator} ${formatDisplay(newDisplay)}`
+      : formatDisplay(newDisplay),
+  };
 }
 
 export function handleToggleSign(state: CalculatorState): CalculatorState {
@@ -124,16 +159,29 @@ export function handleToggleSign(state: CalculatorState): CalculatorState {
   const toggled = state.display.startsWith('-')
     ? state.display.slice(1)
     : '-' + state.display;
-  return { ...state, display: toggled };
+  return {
+    ...state,
+    display: toggled,
+    expression: state.previousValue != null && state.operator
+      ? `${formatDisplay(state.previousValue.toString())} ${state.operator} ${formatDisplay(toggled)}`
+      : formatDisplay(toggled),
+  };
 }
 
 export function handlePercent(state: CalculatorState): CalculatorState {
   const value = parseFloat(state.display);
   if (isNaN(value)) return state;
   const result = value / 100;
-  return { ...state, display: formatDisplay(result.toString()) };
+  const resultStr = formatDisplay(result.toString());
+  return {
+    ...state,
+    display: resultStr,
+    expression: state.previousValue != null && state.operator
+      ? `${formatDisplay(state.previousValue.toString())} ${state.operator} ${resultStr}`
+      : resultStr,
+  };
 }
 
 export function getInitialState(): CalculatorState {
-  return { display: '0', previousValue: null, operator: null, waitingForOperand: false };
+  return { display: '0', previousValue: null, operator: null, waitingForOperand: false, expression: '' };
 }

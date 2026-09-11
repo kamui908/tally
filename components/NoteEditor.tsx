@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
 import {
   View,
   Text,
@@ -29,7 +29,11 @@ const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SWIPE_THRESHOLD = 120;
 const HEADER_HEIGHT = 56;
 
-export default function NoteEditor({ visible, note, onClose, onSave }: Props) {
+export type NoteEditorHandle = {
+  saveAndClose: () => void;
+};
+
+const NoteEditor = forwardRef<NoteEditorHandle, Props>(({ visible, note, onClose, onSave }, ref) => {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [items, setItems] = useState<ChecklistItem[]>([]);
@@ -172,6 +176,13 @@ export default function NoteEditor({ visible, note, onClose, onSave }: Props) {
     setContent(`${content}${separator}• `);
   };
 
+  useImperativeHandle(ref, () => ({
+    saveAndClose: () => {
+      performSave();
+      animateClose(onClose);
+    },
+  }));
+
   if (!visible) return null;
 
   return (
@@ -295,7 +306,9 @@ export default function NoteEditor({ visible, note, onClose, onSave }: Props) {
       </KeyboardAvoidingView>
     </Animated.View>
   );
-}
+});
+
+export default NoteEditor;
 
 const styles = StyleSheet.create({
   container: {

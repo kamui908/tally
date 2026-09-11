@@ -21,7 +21,6 @@ export const ButtonType = {
   number: 'number' as const,
   function: 'function' as const,
   operator: 'operator' as const,
-  zero: 'zero' as const,
 };
 
 export const buttonStyles = {
@@ -35,10 +34,6 @@ export const buttonStyles = {
   },
   [ButtonType.operator]: {
     backgroundColor: Colors.orange,
-    color: Colors.white,
-  },
-  [ButtonType.zero]: {
-    backgroundColor: Colors.darkGray,
     color: Colors.white,
   },
 };

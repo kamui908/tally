@@ -18,4 +18,5 @@ export type CalculatorState = {
   previousValue: number | null;
   operator: string | null;
   waitingForOperand: boolean;
+  expression: string;
 };

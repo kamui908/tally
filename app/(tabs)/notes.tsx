@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import { View, FlatList, Pressable, Text, StyleSheet, Alert } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -6,13 +6,14 @@ import { Note } from '../../types';
 import { Colors } from '../../constants/theme';
 import { getNotes, addNote, updateNote, deleteNote } from '../../utils/storage';
 import NoteCard from '../../components/NoteCard';
-import NoteEditor from '../../components/NoteEditor';
+import NoteEditor, { NoteEditorHandle } from '../../components/NoteEditor';
 import { useFocusEffect } from '@react-navigation/native';
 
 export default function NotesScreen() {
   const [notes, setNotes] = useState<Note[]>([]);
   const [editorVisible, setEditorVisible] = useState(false);
   const [editingNote, setEditingNote] = useState<Note | null>(null);
+  const editorRef = useRef<NoteEditorHandle>(null);
   const insets = useSafeAreaInsets();
 
   useFocusEffect(
@@ -91,11 +92,12 @@ export default function NotesScreen() {
 
       <Pressable
         style={[styles.fab, { bottom: 20 + insets.bottom }]}
-        onPress={openNew}>
-        <Ionicons name="add" size={28} color={Colors.white} />
+        onPress={editorVisible ? () => editorRef.current?.saveAndClose() : openNew}>
+        <Ionicons name={editorVisible ? 'close' : 'add'} size={28} color={Colors.white} />
       </Pressable>
 
       <NoteEditor
+        ref={editorRef}
         visible={editorVisible}
         note={editingNote}
         onClose={() => {

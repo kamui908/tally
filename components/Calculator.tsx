@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, Pressable, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, Pressable, StyleSheet, Dimensions, ScrollView } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { Colors, ButtonType } from '../constants/theme';
 import {
@@ -9,6 +9,7 @@ import {
   handleOperator,
   handleEquals,
   handleClear,
+  handleBackspace,
   handleToggleSign,
   handlePercent,
   getDisplayText,
@@ -55,6 +56,10 @@ export default function Calculator() {
     () => press(() => setState((s) => handleClear(s))),
     [press],
   );
+  const onBackspace = useCallback(
+    () => press(() => setState((s) => handleBackspace(s))),
+    [press],
+  );
   const onToggleSign = useCallback(
     () => press(() => setState((s) => handleToggleSign(s))),
     [press],
@@ -90,7 +95,8 @@ export default function Calculator() {
       { label: '+', type: ButtonType.operator, action: () => onOperator('+') },
     ],
     [
-      { label: '0', type: ButtonType.zero, wide: true, action: () => onDigit('0') },
+      { label: '⌫', type: ButtonType.function, action: onBackspace },
+      { label: '0', type: ButtonType.number, action: () => onDigit('0') },
       { label: '.', type: ButtonType.number, action: onDecimal },
       { label: '=', type: ButtonType.operator, action: onEquals },
     ],
@@ -102,19 +108,26 @@ export default function Calculator() {
   return (
     <View style={styles.container}>
       <View style={styles.displayContainer}>
-        {showActiveOperator && (
-          <View style={styles.activeOperatorRow}>
-            <Text style={styles.activeOperatorText}>
-              {state.previousValue != null
-                ? `${state.previousValue.toLocaleString('en-US')}`
-                : ''}
+        {state.expression && (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.expressionScroll}>
+            <Text style={styles.expressionText}>
+              {state.expression}
             </Text>
-            <Text style={styles.activeOperatorSymbol}>{state.operator}</Text>
-          </View>
+          </ScrollView>
         )}
-        <Text style={[styles.displayText, { fontSize: displayFontSize }]} numberOfLines={1} adjustsFontSizeToFit>
-          {getDisplayText(state.display)}
-        </Text>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.displayScroll}
+          maximumZoomScale={1}
+          minimumZoomScale={1}>
+          <Text style={[styles.displayText, { fontSize: displayFontSize }]}>
+            {getDisplayText(state.display)}
+          </Text>
+        </ScrollView>
       </View>
       <View style={styles.buttonsContainer}>
         {buttons.map((row, rowIdx) => (
@@ -130,8 +143,6 @@ export default function Calculator() {
                   ? styles.operator
                   : btn.type === ButtonType.function
                   ? styles.function
-                  : btn.wide
-                  ? styles.zero
                   : styles.number;
 
               const textColor =
@@ -141,7 +152,7 @@ export default function Calculator() {
                 <Pressable
                   key={btn.label}
                   style={[
-                    btn.wide ? styles.wideButton : styles.button,
+                    styles.button,
                     style,
                     isActive && styles.operatorActive,
                   ]}
@@ -193,8 +204,6 @@ const styles = StyleSheet.create({
   displayContainer: {
     flex: 1,
     justifyContent: 'flex-end',
-    alignItems: 'flex-end',
-    paddingHorizontal: 24,
     paddingBottom: 16,
   },
   activeOperatorRow: {
@@ -218,6 +227,19 @@ const styles = StyleSheet.create({
     fontWeight: '300',
     letterSpacing: -1,
   },
+  displayScroll: {
+    alignItems: 'flex-end',
+    paddingHorizontal: 24,
+  },
+  expressionScroll: {
+    alignItems: 'center',
+    paddingHorizontal: 24,
+  },
+  expressionText: {
+    color: Colors.mediumGray,
+    fontSize: 20,
+    fontWeight: '400',
+  },
   buttonsContainer: {
     paddingHorizontal: 14,
     paddingBottom: 24,
@@ -234,16 +256,6 @@ const styles = StyleSheet.create({
     borderRadius: BUTTON_RADIUS,
     alignItems: 'center',
     justifyContent: 'center',
-    overflow: 'hidden',
-  },
-  wideButton: {
-    width: BUTTON_SIZE * 2 + BUTTON_SPACING,
-    height: BUTTON_SIZE,
-    borderRadius: BUTTON_RADIUS,
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-    flexDirection: 'row',
-    paddingLeft: 28,
     overflow: 'hidden',
   },
   coinHighlightTop: {
@@ -317,14 +329,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.5,
     shadowRadius: 3,
     elevation: 2,
-  },
-  zero: {
-    backgroundColor: Colors.darkGray,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.4,
-    shadowRadius: 4,
-    elevation: 4,
   },
   buttonText: {
     fontSize: 30,
