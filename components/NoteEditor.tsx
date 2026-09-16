@@ -417,6 +417,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     marginBottom: 16,
     padding: 0,
+    outlineStyle: 'none',
   },
   contentInput: {
     color: Colors.white,
@@ -424,6 +425,7 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     minHeight: 160,
     padding: 0,
+    outlineStyle: 'none',
   },
   checklistSection: {
     marginTop: 24,
@@ -461,6 +463,7 @@ const styles = StyleSheet.create({
     color: Colors.white,
     fontSize: 17,
     padding: 0,
+    outlineStyle: 'none',
   },
   checklistInputChecked: {
     textDecorationLine: 'line-through',

@@ -28,51 +28,53 @@ export default function NoteCard({ note, onPress, onDelete }: Props) {
   })();
 
   return (
-    <Pressable style={styles.card} onPress={onPress}>
-      <View style={[styles.accent, { backgroundColor: hasItems ? Colors.checklistAccent : Colors.noteAccent }]} />
-      <View style={styles.content}>
-        <View style={styles.header}>
-          <Text style={styles.title} numberOfLines={1}>
-            {note.title || 'Untitled'}
+    <View style={styles.cardWrapper}>
+      <Pressable style={styles.card} onPress={onPress}>
+        <View style={[styles.accent, { backgroundColor: hasItems ? Colors.checklistAccent : Colors.noteAccent }]} />
+        <View style={styles.content}>
+          <View style={styles.header}>
+            <Text style={styles.title} numberOfLines={1}>
+              {note.title || 'Untitled'}
+            </Text>
+          </View>
+          <Text style={styles.preview} numberOfLines={2}>
+            {preview}
           </Text>
-          <Pressable
-            onPress={(e) => {
-              e.stopPropagation?.();
-              onDelete();
-            }}
-            hitSlop={12}
-            style={styles.deleteBtn}>
-            <Ionicons name="trash-outline" size={16} color={Colors.mediumGray} />
-          </Pressable>
+          <View style={styles.footer}>
+            {hasItems ? (
+              <Text style={styles.badge}>{`${checkedCount}/${totalCount} tasks`}</Text>
+            ) : (
+              <Text style={styles.badge}>Note</Text>
+            )}
+            <Text style={styles.date}>
+              {new Date(note.updatedAt).toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+              })}
+            </Text>
+          </View>
         </View>
-        <Text style={styles.preview} numberOfLines={2}>
-          {preview}
-        </Text>
-        <View style={styles.footer}>
-          {hasItems ? (
-            <Text style={styles.badge}>{`${checkedCount}/${totalCount} tasks`}</Text>
-          ) : (
-            <Text style={styles.badge}>Note</Text>
-          )}
-          <Text style={styles.date}>
-            {new Date(note.updatedAt).toLocaleDateString('en-US', {
-              month: 'short',
-              day: 'numeric',
-            })}
-          </Text>
-        </View>
-      </View>
-    </Pressable>
+      </Pressable>
+      <Pressable
+        onPress={onDelete}
+        hitSlop={12}
+        style={styles.deleteBtn}>
+        <Ionicons name="trash-outline" size={16} color={Colors.mediumGray} />
+      </Pressable>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  cardWrapper: {
+    marginHorizontal: 16,
+    marginVertical: 6,
+    position: 'relative',
+  },
   card: {
     flexDirection: 'row',
     backgroundColor: Colors.cardBg,
     borderRadius: 14,
-    marginHorizontal: 16,
-    marginVertical: 6,
     overflow: 'hidden',
   },
   accent: {
@@ -96,8 +98,11 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   deleteBtn: {
-    padding: 4,
-    marginLeft: 8,
+    position: 'absolute',
+    right: 8,
+    top: 8,
+    padding: 8,
+    zIndex: 1,
   },
   preview: {
     color: Colors.lightGray,

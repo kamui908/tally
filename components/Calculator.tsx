@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, Pressable, StyleSheet, Dimensions, ScrollView } from 'react-native';
+import { View, Text, Pressable, StyleSheet, useWindowDimensions, ScrollView } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { Colors, ButtonType } from '../constants/theme';
 import {
@@ -16,10 +16,7 @@ import {
 } from '../utils/calculator';
 import { CalculatorState } from '../types';
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const BUTTON_SPACING = 10;
-const BUTTON_SIZE = (SCREEN_WIDTH - 20 - 3 * BUTTON_SPACING) / 4;
-const BUTTON_RADIUS = BUTTON_SIZE / 2 + 4;
 
 type ButtonDef = {
   label: string;
@@ -29,7 +26,14 @@ type ButtonDef = {
 };
 
 export default function Calculator() {
+  const { width: screenWidth } = useWindowDimensions();
   const [state, setState] = useState<CalculatorState>(getInitialState());
+
+  const BUTTON_SIZE = Math.min(
+    (screenWidth - 20 - 3 * BUTTON_SPACING) / 4,
+    90
+  );
+  const BUTTON_RADIUS = BUTTON_SIZE / 2 + 4;
 
   const press = useCallback((action: () => void) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -153,6 +157,7 @@ export default function Calculator() {
                   key={btn.label}
                   style={[
                     styles.button,
+                    { width: BUTTON_SIZE, height: BUTTON_SIZE, borderRadius: BUTTON_RADIUS },
                     style,
                     isActive && styles.operatorActive,
                   ]}
@@ -162,6 +167,7 @@ export default function Calculator() {
                     pointerEvents="none"
                     style={[
                       styles.coinHighlightTop,
+                      { borderRadius: BUTTON_RADIUS },
                       btn.type === ButtonType.operator
                         ? isActive
                           ? styles.coinTopOperatorActive
@@ -175,6 +181,7 @@ export default function Calculator() {
                     pointerEvents="none"
                     style={[
                       styles.coinHighlightRim,
+                      { borderRadius: BUTTON_RADIUS },
                       btn.type === ButtonType.operator
                         ? styles.coinRimOperator
                         : btn.type === ButtonType.function
@@ -251,9 +258,6 @@ const styles = StyleSheet.create({
     gap: BUTTON_SPACING,
   },
   button: {
-    width: BUTTON_SIZE,
-    height: BUTTON_SIZE,
-    borderRadius: BUTTON_RADIUS,
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
@@ -264,7 +268,6 @@ const styles = StyleSheet.create({
     left: 4,
     right: 4,
     height: '55%',
-    borderRadius: BUTTON_RADIUS,
     borderBottomLeftRadius: 0,
     borderBottomRightRadius: 0,
   },
@@ -286,7 +289,6 @@ const styles = StyleSheet.create({
     left: 1,
     right: 1,
     bottom: 1,
-    borderRadius: BUTTON_RADIUS,
     borderWidth: 0.5,
   },
   coinRimNumber: {
