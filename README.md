@@ -1,50 +1,46 @@
-# Welcome to your Expo app 👋
+# Tally
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A two-in-one productivity app combining a calculator and notes/checklist system. Built with Expo, fully offline with a polished dark UI.
 
-## Get started
+## Features
 
-1. Install dependencies
+### Calculator
+- Standard arithmetic operations (add, subtract, multiply, divide)
+- Expression display, backspace, toggle sign, and percentage
+- Haptic feedback on every button press
+- Comma-formatted numbers with scientific notation fallback
+- Active operator highlighting with coin-style button design
 
-   ```bash
-   npm install
-   ```
+### Notes
+- Create, edit, and delete notes
+- Rich text editor with bold, italic, strikethrough, and bullet formatting
+- Checklist mode with task completion tracking
+- Swipe-to-dismiss editor with auto-save
+- Empty state UI and delete confirmation dialog
 
-2. Start the app
+## Tech Stack
 
-   ```bash
-   npx expo start
-   ```
+- Expo SDK 54 / React Native 0.81.5
+- Expo Router (file-based routing)
+- TypeScript (strict mode)
+- Async Storage for local persistence
+- React Native Reanimated & Gesture Handler
+- Expo Haptics
+- New Architecture & React Compiler enabled
 
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+## Getting Started
 
 ```bash
-npm run reset-project
+npm install
+npx expo start
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+No environment variables or API keys required. The app runs entirely offline.
 
-## Learn more
+## Building
 
-To learn more about developing your project with Expo, look at the following resources:
+For a production APK:
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+```bash
+eas build -p android --profile production
+```
