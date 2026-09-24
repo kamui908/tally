@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef } from 'react';
-import { View, FlatList, Pressable, Text, StyleSheet, Alert } from 'react-native';
+import { View, FlatList, Pressable, Text, StyleSheet, Alert, Platform } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Note } from '../../types';
@@ -35,6 +35,21 @@ export default function NotesScreen() {
   };
 
   const handleDelete = (note: Note) => {
+    // Alert.alert button callbacks don't fire on web (react-native-web has no
+    // native confirm buttons), so the delete appeared to do nothing.
+    if (Platform.OS === 'web') {
+      const confirmed =
+        typeof window !== 'undefined'
+          ? window.confirm(`Delete "${note.title || 'Untitled'}"?`)
+          : true;
+      if (!confirmed) return;
+      void (async () => {
+        await deleteNote(note.id);
+        const updated = await getNotes();
+        setNotes(updated);
+      })();
+      return;
+    }
     Alert.alert('Delete Note', `Delete "${note.title}"?`, [
       { text: 'Cancel', style: 'cancel' },
       {

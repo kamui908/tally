@@ -29,14 +29,21 @@ export default function Calculator() {
   const { width: screenWidth } = useWindowDimensions();
   const [state, setState] = useState<CalculatorState>(getInitialState());
 
-  const BUTTON_SIZE = Math.min(
-    (screenWidth - 20 - 3 * BUTTON_SPACING) / 4,
-    90
+  // useWindowDimensions can be 0 on first render (SSR / fresh web load),
+  // which previously produced a negative size and "deflated" buttons.
+  const safeWidth = screenWidth && screenWidth > 0 ? screenWidth : 400;
+  const BUTTON_SIZE = Math.max(
+    56,
+    Math.min((safeWidth - 32 - 3 * BUTTON_SPACING) / 4, 90),
   );
-  const BUTTON_RADIUS = BUTTON_SIZE / 2 + 4;
+  const BUTTON_RADIUS = BUTTON_SIZE / 2;
 
   const press = useCallback((action: () => void) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    try {
+      void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+    } catch {
+      // Haptics unavailable (e.g. web) — ignore.
+    }
     action();
   }, []);
 
@@ -107,12 +114,13 @@ export default function Calculator() {
   ];
 
   const displayFontSize = state.display.length > 7 ? 40 : state.display.length > 5 ? 52 : 72;
-  const showActiveOperator = state.operator !== null && state.waitingForOperand;
+  const lastToken = state.tokens.length > 0 ? state.tokens[state.tokens.length - 1] : null;
+  const showExpression = state.tokens.length > 0 || state.justEvaluated;
 
   return (
     <View style={styles.container}>
       <View style={styles.displayContainer}>
-        {state.expression && (
+        {showExpression && state.expression ? (
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -121,7 +129,7 @@ export default function Calculator() {
               {state.expression}
             </Text>
           </ScrollView>
-        )}
+        ) : null}
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -139,7 +147,8 @@ export default function Calculator() {
             {row.map((btn) => {
               const isActive =
                 btn.type === ButtonType.operator &&
-                state.operator === btn.label &&
+                btn.label !== '=' &&
+                lastToken === btn.label &&
                 state.waitingForOperand;
 
               const style =
@@ -248,9 +257,12 @@ const styles = StyleSheet.create({
     fontWeight: '400',
   },
   buttonsContainer: {
-    paddingHorizontal: 14,
+    paddingHorizontal: 16,
     paddingBottom: 24,
     gap: BUTTON_SPACING,
+    width: '100%',
+    maxWidth: 430,
+    alignSelf: 'center',
   },
   row: {
     flexDirection: 'row',
@@ -261,6 +273,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
+    flexShrink: 0,
   },
   coinHighlightTop: {
     position: 'absolute',

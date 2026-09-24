@@ -15,8 +15,8 @@ export type Note = {
 
 export type CalculatorState = {
   display: string;
-  previousValue: number | null;
-  operator: string | null;
-  waitingForOperand: boolean;
   expression: string;
+  tokens: Array<number | string>;
+  waitingForOperand: boolean;
+  justEvaluated: boolean;
 };
